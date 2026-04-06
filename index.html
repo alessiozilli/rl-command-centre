@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RL Command Centre</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Lexend+Mega:wght@700&display=swap" rel="stylesheet">
+    <style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+    --az:#990000;--qf:#c4922a;--per:#3a7fbf;--td:#2a9e8f;--fam:#9b72cf;--warm:#d4856a;
+    --bg:#0f0f0f;--surf:#1a1a1a;--surf2:#242424;--surf3:#2e2e2e;
+    --text:#f0ede0;--text2:#a09c96;--text3:#6a6762;--border:#2e2e2e;
+    --r:10px;--font:'Lexend',sans-serif;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:16px;line-height:1.75;letter-spacing:0.02em;min-height:100vh}
+.app{display:flex;flex-direction:column;min-height:100vh}
+
+/* ===== HEADER ===== */
+.hdr{padding:14px 24px;border-bottom:1px solid var(--border);background:var(--surf);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.hdr-left{display:flex;flex-direction:column}
+.brand{font-family:'Lexend Mega',sans-serif;font-size:15px;letter-spacing:0.07em;color:var(--text)}
+.datelbl{font-size:11px;color:var(--text3);font-weight:300;margin-top:1px}
+.hdr-right{display:flex;align-items:center;gap:20px}
+.hdr-stats{display:flex;gap:20px}
+.stat{text-align:center}
+.stat-n{font-size:20px;font-weight:600;line-height:1}
+.stat-l{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-top:3px}
+.s-open{color:var(--text)}.s-today{color:var(--qf)}.s-done{color:#6ec06e}
+
+.sync-btn{padding:7px 14px;border-radius:var(--r);font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text2);font-family:var(--font);display:flex;align-items:center;gap:6px;transition:all .2s}
+.sync-btn:hover{border-color:var(--text3);color:var(--text)}
+.sync-ok{color:#6ec06e;border-color:#6ec06e33}
+
+/* ===== FILTERS ===== */
+.filters{padding:12px 24px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--surf)}
+.fbtn{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:400;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text2);font-family:var(--font);transition:all .2s}
+.fbtn:hover{border-color:var(--text3);color:var(--text)}
+.fbtn.active{background:var(--surf3);color:var(--text);border-color:var(--text3)}
+.fbtn-cat{border-left:3px solid transparent;border-radius:var(--r)}
+
+/* ===== MAIN ===== */
+.main{flex:1;padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+
+/* ===== ADD TASK ===== */
+.add-bar{display:flex;gap:8px;flex-wrap:wrap}
+.add-bar input[type=text]{flex:1;min-width:200px;padding:10px 14px;border-radius:var(--r);border:1px solid var(--border);background:var(--surf);color:var(--text);font-family:var(--font);font-size:14px}
+.add-bar input[type=text]:focus{outline:none;border-color:var(--text3)}
+.add-bar input[type=text]::placeholder{color:var(--text3)}
+.add-bar select{padding:10px 12px;border-radius:var(--r);border:1px solid var(--border);background:var(--surf);color:var(--text2);font-family:var(--font);font-size:13px;cursor:pointer}
+.add-bar select:focus{outline:none;border-color:var(--text3)}
+.add-btn{padding:10px 20px;border-radius:var(--r);border:none;background:var(--az);color:#fff;font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+.add-btn:hover{background:#b30000}
+
+/* ===== TASK LIST ===== */
+.task-group{margin-bottom:8px}
+.group-hdr{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);padding:8px 0 4px;border-bottom:1px solid var(--border);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.group-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.group-count{font-weight:300;margin-left:auto}
+
+.task{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r);background:var(--surf);border:1px solid transparent;margin-bottom:4px;transition:all .15s;cursor:default}
+.task:hover{border-color:var(--border);background:var(--surf2)}
+.task.done{opacity:.45}
+.task.done .task-text{text-decoration:line-through}
+
+.task-check{width:18px;height:18px;border-radius:50%;border:2px solid var(--text3);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.task-check:hover{border-color:var(--text)}
+.task.done .task-check{border-color:#6ec06e;background:#6ec06e22}
+.task.done .task-check::after{content:'✓';color:#6ec06e;font-size:11px}
+
+.task-text{flex:1;font-size:14px;font-weight:400}
+.task-meta{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.task-cat{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:400;letter-spacing:0.02em}
+.task-pri{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em}
+.pri-high{color:#e05555}.pri-med{color:var(--qf)}.pri-low{color:var(--text3)}
+.task-time{font-size:10px;color:var(--text3);white-space:nowrap}
+.task-del{width:24px;height:24px;border-radius:50%;border:none;background:transparent;color:var(--text3);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s;opacity:0}
+.task:hover .task-del{opacity:1}
+.task-del:hover{background:#e0555533;color:#e05555}
+
+/* ===== EMPTY STATE ===== */
+.empty{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-icon{font-size:36px;margin-bottom:12px}
+.empty-text{font-size:14px}
+
+/* ===== FOOTER ===== */
+.ftr{padding:12px 24px;border-top:1px solid var(--border);background:var(--surf);display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text3)}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:640px){
+    .hdr{padding:12px 16px}
+    .main{padding:16px}
+    .filters{padding:10px 16px}
+    .add-bar{flex-direction:column}
+    .add-bar input[type=text]{min-width:auto}
+    .task-meta{flex-wrap:wrap}
+    .hdr-stats{gap:14px}
+}
+    </style>
+</head>
+<body>
+<div class="app">
+    <!-- HEADER -->
+    <div class="hdr">
+        <div class="hdr-left">
+            <div class="brand">RL COMMAND CENTRE</div>
+            <div class="datelbl" id="dateLbl"></div>
+        </div>
+        <div class="hdr-right">
+            <div class="hdr-stats">
+                <div class="stat"><div class="stat-n s-open" id="statOpen">0</div><div class="stat-l">Open</div></div>
+                <div class="stat"><div class="stat-n s-today" id="statToday">0</div><div class="stat-l">Today</div></div>
+                <div class="stat"><div class="stat-n s-done" id="statDone">0</div><div class="stat-l">Done</div></div>
+            </div>
+            <button class="sync-btn" id="syncBtn" onclick="syncNow()">⟳ Sync</button>
+        </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filters">
+        <button class="fbtn active" data-filter="all" onclick="setFilter('all',this)">All</button>
+        <button class="fbtn" data-filter="open" onclick="setFilter('open',this)">Open</button>
+        <button class="fbtn" data-filter="today" onclick="setFilter('today',this)">Today</button>
+        <button class="fbtn" data-filter="done" onclick="setFilter('done',this)">Done</button>
+        <span style="width:1px;background:var(--border);margin:0 4px"></span>
+        <button class="fbtn fbtn-cat" style="border-left-color:var(--per)" data-filter="cat-clients" onclick="setFilter('cat-clients',this)">Clients</button>
+        <button class="fbtn fbtn-cat" style="border-left-color:var(--qf)" data-filter="cat-orders" onclick="setFilter('cat-orders',this)">Orders & Store</button>
+        <button class="fbtn fbtn-cat" style="border-left-color:var(--fam)" data-filter="cat-social" onclick="setFilter('cat-social',this)">Social Media</button>
+        <button class="fbtn fbtn-cat" style="border-left-color:var(--td)" data-filter="cat-books" onclick="setFilter('cat-books',this)">Bookkeeping</button>
+        <button class="fbtn fbtn-cat" style="border-left-color:var(--warm)" data-filter="cat-grants" onclick="setFilter('cat-grants',this)">Grants</button>
+        <button class="fbtn fbtn-cat" style="border-left-color:var(--text3)" data-filter="cat-admin" onclick="setFilter('cat-admin',this)">Admin</button>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+        <!-- ADD TASK -->
+        <div class="add-bar">
+            <input type="text" id="taskInput" placeholder="Add a task..." onkeydown="if(event.key==='Enter')addTask()">
+            <select id="catSelect">
+                <option value="clients">Clients</option>
+                <option value="orders">Orders & Store</option>
+                <option value="social">Social Media</option>
+                <option value="books">Bookkeeping</option>
+                <option value="grants">Grants</option>
+                <option value="admin">Admin</option>
+            </select>
+            <select id="priSelect">
+                <option value="high">High</option>
+                <option value="med" selected>Medium</option>
+                <option value="low">Low</option>
+            </select>
+            <select id="timeSelect">
+                <option value="">No time est.</option>
+                <option value="15">15 min</option>
+                <option value="30">30 min</option>
+                <option value="60">60 min</option>
+                <option value="90">90 min</option>
+            </select>
+            <button class="add-btn" onclick="addTask()">+ Add</button>
+        </div>
+
+        <!-- TASK LIST -->
+        <div id="taskList"></div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="ftr">
+        <span>RL Command Centre — AZ Custom Knives Ltd.</span>
+        <span id="syncStatus">Not synced</span>
+    </div>
+</div>
+
+<script>
+/* ===== DATA ===== */
+const CATS={
+    clients:{label:'Clients',color:'var(--per)'},
+    orders:{label:'Orders & Store',color:'var(--qf)'},
+    social:{label:'Social Media',color:'var(--fam)'},
+    books:{label:'Bookkeeping',color:'var(--td)'},
+    grants:{label:'Grants',color:'var(--warm)'},
+    admin:{label:'Admin',color:'var(--text3)'}
+};
+
+const GIST_ID='';  // Add Gist ID for cross-device sync
+const GIST_TOKEN='';  // Add token for write access
+const GIST_FILE='rl_cc_tasks.json';
+
+let tasks=[];
+let currentFilter='all';
+
+/* ===== INIT ===== */
+function init(){
+    updateDate();
+    loadLocal();
+    if(GIST_ID && GIST_TOKEN) loadGist().then(render);
+    else render();
+    setInterval(updateDate,60000);
+}
+
+function updateDate(){
+    const d=new Date();
+    const opts={weekday:'long',year:'numeric',month:'long',day:'numeric'};
+    document.getElementById('dateLbl').textContent=d.toLocaleDateString('en-CA',opts);
+}
+
+/* ===== STORAGE ===== */
+function saveLocal(){
+    localStorage.setItem('rl_cc_tasks',JSON.stringify(tasks));
+}
+
+function loadLocal(){
+    try{const d=localStorage.getItem('rl_cc_tasks');if(d)tasks=JSON.parse(d)}catch(e){}
+}
+
+async function loadGist(){
+    if(!GIST_ID)return;
+    try{
+        const r=await fetch('https://api.github.com/gists/'+GIST_ID,{headers:{'Authorization':'token '+GIST_TOKEN}});
+        if(!r.ok)return;
+        const g=await r.json();
+        if(g.files&&g.files[GIST_FILE]){
+            const remote=JSON.parse(g.files[GIST_FILE].content);
+            if(remote.length>=tasks.length)tasks=remote;
+        }
+        document.getElementById('syncBtn').classList.add('sync-ok');
+        document.getElementById('syncBtn').innerHTML='✓ Synced';
+        document.getElementById('syncStatus').textContent='Synced just now';
+    }catch(e){
+        document.getElementById('syncStatus').textContent='Sync failed';
+    }
+}
+
+async function saveGist(){
+    if(!GIST_ID||!GIST_TOKEN)return;
+    try{
+        const body={files:{}};
+        body.files[GIST_FILE]={content:JSON.stringify(tasks,null,2)};
+        await fetch('https://api.github.com/gists/'+GIST_ID,{method:'PATCH',headers:{'Authorization':'token '+GIST_TOKEN,'Content-Type':'application/json'},body:JSON.stringify(body)});
+        document.getElementById('syncBtn').classList.add('sync-ok');
+        document.getElementById('syncBtn').innerHTML='✓ Synced';
+        document.getElementById('syncStatus').textContent='Synced '+new Date().toLocaleTimeString();
+    }catch(e){
+        document.getElementById('syncStatus').textContent='Sync failed';
+    }
+}
+
+async function syncNow(){
+    document.getElementById('syncBtn').innerHTML='⟳ Syncing...';
+    if(GIST_ID&&GIST_TOKEN){await loadGist();render()}
+    else{
+        document.getElementById('syncBtn').classList.add('sync-ok');
+        document.getElementById('syncBtn').innerHTML='✓ Local';
+        document.getElementById('syncStatus').textContent='Using local storage';
+    }
+}
+
+/* ===== TASKS ===== */
+function addTask(){
+    const input=document.getElementById('taskInput');
+    const text=input.value.trim();
+    if(!text)return;
+    tasks.push({
+        id:Date.now(),
+        text:text,
+        cat:document.getElementById('catSelect').value,
+        pri:document.getElementById('priSelect').value,
+        time:document.getElementById('timeSelect').value,
+        status:'open',
+        created:new Date().toISOString()
+    });
+    input.value='';
+    save();render();
+}
+
+function toggleTask(id){
+    const t=tasks.find(t=>t.id===id);
+    if(!t)return;
+    t.status=t.status==='done'?'open':'done';
+    if(t.status==='done')t.completed=new Date().toISOString();
+    save();render();
+}
+
+function markToday(id){
+    const t=tasks.find(t=>t.id===id);
+    if(!t)return;
+    t.status=t.status==='today'?'open':'today';
+    save();render();
+}
+
+function deleteTask(id){
+    tasks=tasks.filter(t=>t.id!==id);
+    save();render();
+}
+
+function save(){saveLocal();saveGist()}
+
+/* ===== RENDER ===== */
+function render(){
+    const list=document.getElementById('taskList');
+    let filtered=tasks;
+
+    if(currentFilter==='open')filtered=tasks.filter(t=>t.status==='open');
+    else if(currentFilter==='today')filtered=tasks.filter(t=>t.status==='today');
+    else if(currentFilter==='done')filtered=tasks.filter(t=>t.status==='done');
+    else if(currentFilter.startsWith('cat-')){
+        const cat=currentFilter.replace('cat-','');
+        filtered=tasks.filter(t=>t.cat===cat&&t.status!=='done');
+    }
+
+    // Sort: today first, then by priority, then open, then done
+    const priOrder={high:0,med:1,low:2};
+    const statusOrder={today:0,open:1,done:2};
+    filtered.sort((a,b)=>(statusOrder[a.status]||1)-(statusOrder[b.status]||1)||priOrder[a.pri]-priOrder[b.pri]);
+
+    // Group by category
+    const groups={};
+    filtered.forEach(t=>{
+        if(!groups[t.cat])groups[t.cat]=[];
+        groups[t.cat].push(t);
+    });
+
+    if(filtered.length===0){
+        list.innerHTML='<div class="empty"><div class="empty-icon">✦</div><div class="empty-text">No tasks here. Nice work!</div></div>';
+    }else{
+        let html='';
+        const catOrder=['clients','orders','social','books','grants','admin'];
+        catOrder.forEach(cat=>{
+            if(!groups[cat])return;
+            const c=CATS[cat];
+            html+=`<div class="task-group">
+                <div class="group-hdr"><span class="group-dot" style="background:${c.color}"></span>${c.label}<span class="group-count">${groups[cat].length}</span></div>`;
+            groups[cat].forEach(t=>{
+                const priClass=t.pri==='high'?'pri-high':t.pri==='med'?'pri-med':'pri-low';
+                const doneClass=t.status==='done'?'done':'';
+                const todayMark=t.status==='today'?'style="border-left:3px solid var(--qf)"':'';
+                html+=`<div class="task ${doneClass}" ${todayMark}>
+                    <div class="task-check" onclick="toggleTask(${t.id})" title="Toggle done"></div>
+                    <div class="task-text">${escHtml(t.text)}</div>
+                    <div class="task-meta">
+                        ${t.time?`<span class="task-time">${t.time}m</span>`:''}
+                        <span class="task-pri ${priClass}">${t.pri}</span>
+                        <span class="task-cat" style="background:${c.color}22;color:${c.color}">${c.label}</span>
+                    </div>
+                    <button class="task-del" onclick="deleteTask(${t.id})" title="Delete">✕</button>
+                </div>`;
+            });
+            html+='</div>';
+        });
+        list.innerHTML=html;
+    }
+
+    // Update stats
+    const open=tasks.filter(t=>t.status==='open').length;
+    const today=tasks.filter(t=>t.status==='today').length;
+    const done=tasks.filter(t=>t.status==='done').length;
+    document.getElementById('statOpen').textContent=open;
+    document.getElementById('statToday').textContent=today;
+    document.getElementById('statDone').textContent=done;
+}
+
+function setFilter(f,btn){
+    currentFilter=f;
+    document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+}
+
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+/* ===== CONTEXT MENU (right-click for Today) ===== */
+document.addEventListener('contextmenu',function(e){
+    const task=e.target.closest('.task');
+    if(task){
+        e.preventDefault();
+        const check=task.querySelector('.task-check');
+        if(check){
+            const id=parseInt(check.getAttribute('onclick').match(/\d+/)[0]);
+            markToday(id);
+        }
+    }
+});
+
+init();
+</script>
+</body>
+</html>
